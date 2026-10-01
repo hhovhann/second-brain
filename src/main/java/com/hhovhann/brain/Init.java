@@ -3,17 +3,24 @@ package com.hhovhann.brain;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * Makes a brain folder: two folders, the Claude Code commands, and a config that lets Claude Code
  * search the brain by itself. Never overwrites a file that already exists.
  */
 final class Init {
+
+    /** Built-in starter files: where they are inside the program, and where they go in a new brain. */
+    private static final String[][] STARTER = {
+        {"README.md", "README.md"},
+        {"CLAUDE.md", "CLAUDE.md"},
+        {"capture.md", ".claude/commands/capture.md"},
+        {"ask.md", ".claude/commands/ask.md"},
+    };
 
     private Init() {}
 
@@ -25,17 +32,17 @@ final class Init {
         Path home = args.isEmpty() ? cwd : cwd.resolve(args.get(0)).normalize();
         Files.createDirectories(home.resolve("notes"));
         Files.createDirectories(home.resolve("sources"));
-        Path starter = tool.resolve("starter");
         int copied = 0;
-        if (Files.isDirectory(starter)) {
-            try (Stream<Path> files = Files.walk(starter)) {
-                for (Path from : files.filter(Files::isRegularFile).toList()) {
-                    Path to = home.resolve(starter.relativize(from).toString());
-                    if (!Files.exists(to)) {
-                        Files.createDirectories(to.getParent());
-                        Files.copy(from, to, StandardCopyOption.COPY_ATTRIBUTES);
-                        copied++;
+        for (String[] file : STARTER) {
+            Path to = home.resolve(file[1]);
+            if (!Files.exists(to)) {
+                try (InputStream in = Init.class.getResourceAsStream("/starter/" + file[0])) {
+                    if (in == null) {
+                        throw new IOException("missing built-in file " + file[0]);
                     }
+                    Files.createDirectories(to.getParent());
+                    Files.copy(in, to);
+                    copied++;
                 }
             }
         }
@@ -46,7 +53,7 @@ final class Init {
                 // no git is fine: the brain is just folders
             }
         }
-        Path launcher = tool.resolve("bin/brain");
+        Path launcher = tool.resolve("brain");
         boolean mcp = Files.isRegularFile(launcher);
         if (mcp) {
             writeMcpConfig(home, launcher);
@@ -69,8 +76,7 @@ final class Init {
                           in this folder:      already set up (.mcp.json); approve it the first time Claude Code asks
                           from any project:    claude mcp add --scope user brain -e BRAIN_HOME=%s -- %s mcp
                         """.formatted(home, launcher) : "",
-                copied == 0 && !Files.isDirectory(starter)
-                        ? "\n(The Claude Code commands were not copied: BRAIN_TOOL_DIR does not point at second-brain.)\n" : "");
+                "");
         return 0;
     }
 

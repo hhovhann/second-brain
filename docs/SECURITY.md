@@ -31,6 +31,18 @@ Applications 2026, plus the ordinary web Top 10 for anything served over HTTP.
 8. **Supply chain.** → pinned versions, Gradle dependency verification, dependency and secret
    scanning in CI, an SBOM.
 
+## Capture reads untrusted text (implemented)
+
+`brain capture` reads web pages, documents, chats and recordings, which may say "ignore your
+instructions". What holds: the model only *proposes*; a proposal becomes a note only if its quote is
+found word for word in the source, so injected text cannot add a claim the source does not contain;
+nothing is trusted until you accept it; the model never writes the source field (code does); the
+extraction prompt marks the text as data. What does not: an attacker who controls a source can still
+get a true quote of their own words into your drafts, which is why you read each note before
+accepting. Word and PowerPoint files are parsed with external entities and DTDs switched off.
+Fetching a web page or video is the only network use; there is no allow-list, so do not capture a
+URL you would not open yourself.
+
 ## Deployment (OCI, later)
 
 Nothing public in v1. The MCP HTTP endpoint is single-principal and has no auth; before any

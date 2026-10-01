@@ -20,7 +20,7 @@ class InitTest {
         Path home = cwd.resolve("my-brain");
         assertThat(home.resolve("notes")).isDirectory();
         assertThat(home.resolve("sources")).isDirectory();
-        assertThat(home.resolve(".claude/commands/learn.md")).isRegularFile();
+        assertThat(home.resolve(".claude/commands/capture.md")).isRegularFile();
         assertThat(home.resolve(".claude/commands/ask.md")).isRegularFile();
     }
 
@@ -28,7 +28,7 @@ class InitTest {
     void aNewBrainIsWiredSoClaudeCodeCanSearchItByItself() throws IOException {
         Init.run(cwd, List.of("b"), Path.of(".").toAbsolutePath().normalize());
         String config = Files.readString(cwd.resolve("b/.mcp.json"));
-        assertThat(config).contains("\"brain\"", "bin/brain", "\"mcp\"", cwd.resolve("b").toString());
+        assertThat(config).contains("\"brain\"", "brain", "\"mcp\"", cwd.resolve("b").toString());
     }
 
     @Test

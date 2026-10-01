@@ -24,6 +24,10 @@ dependencies {
     implementation("dev.langchain4j:langchain4j-open-ai")
     implementation("dev.langchain4j:langchain4j-http-client-jdk")
 
+    // Reading documents: PDF and web pages. Word and PowerPoint files are plain zip + XML, no library.
+    implementation("org.apache.pdfbox:pdfbox:3.0.4")
+    implementation("org.jsoup:jsoup:1.19.1")
+
     testImplementation(platform("org.junit:junit-bom:6.1.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.assertj:assertj-core:3.27.3")

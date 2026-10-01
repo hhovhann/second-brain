@@ -81,23 +81,40 @@ final class Ingest {
             }
         }
         if (input == null) {
-            System.err.println("usage: brain add <slack-link | video-url | recording-file> [--name id] [--screen]");
+            System.err.println("usage: brain capture <anything>   (video-url, recording, slack-link, repo, pdf, docx, web page, ...)");
             return 2;
         }
+        Path out;
+        try {
+            out = fetch(root, input, name, screen);
+        } catch (IOException | IllegalArgumentException e) {
+            System.err.println("add failed: " + e.getMessage());
+            return 1;
+        }
+        long lines = Files.readAllLines(out).stream().filter(l -> l.startsWith("[")).count();
+        System.out.printf("Saved %d lines of text to sources/%s%n", lines, out.getFileName());
+        return 0;
+    }
+
+    /** Is this a Slack link, a video or recording we can transcribe? Anything else is not Ingest's job. */
+    static boolean handles(String input) {
+        Kind kind = classify(input);
+        return kind == Kind.SLACK || (kind == Kind.URL && Reader.looksLikeVideo(input))
+                || (kind == Kind.FILE && Files.isRegularFile(Path.of(input)) && MEDIA.contains(extension(input)));
+    }
+
+    /** Turns a Slack link, a video URL or a recording file into {@code sources/<id>.md} and returns that file. */
+    static Path fetch(Path root, String input, String name, boolean screen) throws IOException, InterruptedException {
         Kind kind = classify(input);
         if (kind == Kind.FILE && !Files.isRegularFile(Path.of(input))) {
-            System.err.println("not a Slack link, a http(s) URL, or a file: " + input);
-            return 2;
+            throw new IOException("not a Slack link, a http(s) URL, or a file: " + input);
         }
         if (kind == Kind.FILE && !MEDIA.contains(extension(input))) {
-            System.err.println("not a recording (expected one of " + new java.util.TreeSet<>(MEDIA) + "). "
-                    + "A text file needs no ingest: point a note's repo and source at it.");
-            return 2;
+            throw new IOException("not a recording (expected one of " + new java.util.TreeSet<>(MEDIA) + ")");
         }
         String id = name != null ? name : idFor(kind, input);
         if (!NAME.matcher(id).matches()) {
-            System.err.println("name must be lowercase letters, digits and dashes: " + id);
-            return 2;
+            throw new IOException("name must be lowercase letters, digits and dashes: " + id);
         }
         Path sources = Files.createDirectories(root.resolve("sources"));
         Path out = sources.resolve(id + ".md");
@@ -109,16 +126,10 @@ final class Ingest {
                 case FILE -> recording(Path.of(input).toAbsolutePath(), input, dir, screen);
             };
             Files.writeString(out, text);
-        } catch (IOException | IllegalArgumentException e) {
-            System.err.println("add failed: " + e.getMessage());
-            return 1;
         } finally {
             deleteTree(dir);
         }
-        long lines = Files.readAllLines(out).stream().filter(l -> l.startsWith("[")).count();
-        System.out.printf("Saved %d lines of text to sources/%s.md%n", lines, id);
-        System.out.printf("Next, in Claude Code:  /learn sources/%s.md <topic>%n", id);
-        return 0;
+        return out;
     }
 
     private static String slack(String link) throws IOException, InterruptedException {
@@ -168,7 +179,7 @@ final class Ingest {
                     "-vn", "-ar", "16000", "-ac", "1", wav.toString()), 30 * 60);
         }
         System.out.println("Transcribing locally...");
-        String json = exec(List.of(Models.env("BRAIN_PYTHON", "python3"), Path.of(Models.env("BRAIN_TOOL_DIR", ".")).resolve("bin/transcribe.py").toString(), wav.toString()), 3 * 60 * 60);
+        String json = exec(List.of(Models.env("BRAIN_PYTHON", "python3"), helper(dir).toString(), wav.toString()), 3 * 60 * 60);
         List<Transcript.Segment> segments = new ArrayList<>();
         for (JsonNode s : JSON.readTree(json)) {
             segments.add(new Transcript.Segment(s.path("start").asDouble(), s.path("text").asText(), false));
@@ -201,7 +212,7 @@ final class Ingest {
         return texts;
     }
 
-    private static String exec(List<String> command, int timeoutSeconds) throws IOException, InterruptedException {
+    static String exec(List<String> command, int timeoutSeconds) throws IOException, InterruptedException {
         Path err = Files.createTempFile("brain-ingest", ".err");
         try {
             Process process;
@@ -234,6 +245,18 @@ final class Ingest {
         } finally {
             Files.deleteIfExists(err);
         }
+    }
+
+    /** The speech-to-text helper ships inside the program; write it out next to the audio to run it. */
+    private static Path helper(Path work) throws IOException {
+        Path script = work.resolve("transcribe.py");
+        try (java.io.InputStream in = Ingest.class.getResourceAsStream("/transcribe.py")) {
+            if (in == null) {
+                throw new IOException("missing built-in transcribe.py");
+            }
+            Files.copy(in, script, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        }
+        return script;
     }
 
     private static void deleteTree(Path dir) {

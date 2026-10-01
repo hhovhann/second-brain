@@ -8,29 +8,29 @@
 <text x="668" y="38" font-size="15" font-weight="700" fill="#17653a">TRUSTED · a program decides, not a model</text>
 <rect x="26" y="92" width="170" height="150" rx="12" fill="#ffffff" stroke="#c98a14" stroke-width="2"/>
 <text x="111.0" y="120" text-anchor="middle" font-size="17" font-weight="700" fill="#1f2933">Sources</text>
-<text x="42" y="148" font-size="14" fill="#323f4b">• Git history &amp; docs</text>
-<text x="42" y="169" font-size="14" fill="#323f4b">• Video URL</text>
-<text x="42" y="190" font-size="14" fill="#323f4b">• Screen recording</text>
-<text x="42" y="211" font-size="14" fill="#323f4b">• Slack thread</text>
-<text x="42" y="232" font-size="14" fill="#323f4b">• Text &amp; transcripts</text>
+<text x="42" y="148" font-size="14" fill="#323f4b">• Repo or folder</text>
+<text x="42" y="169" font-size="14" fill="#323f4b">• PDF, Word, slides</text>
+<text x="42" y="190" font-size="14" fill="#323f4b">• Web page, Google Doc</text>
+<text x="42" y="211" font-size="14" fill="#323f4b">• Video, recording</text>
+<text x="42" y="232" font-size="14" fill="#323f4b">• Slack, image, text</text>
 <rect x="240" y="92" width="170" height="150" rx="12" fill="#ffffff" stroke="#c98a14" stroke-width="2"/>
-<text x="325.0" y="120" text-anchor="middle" font-size="17" font-weight="700" fill="#1f2933">brain add</text>
-<text x="325.0" y="148" text-anchor="middle" font-size="13.5" fill="#323f4b">Runs on your machine:</text>
-<text x="325.0" y="169" text-anchor="middle" font-size="13.5" fill="#323f4b">yt-dlp · ffmpeg</text>
-<text x="325.0" y="190" text-anchor="middle" font-size="13.5" fill="#323f4b">Whisper speech-to-text</text>
-<text x="325.0" y="211" text-anchor="middle" font-size="13.5" fill="#323f4b">OCR · Slack API</text>
+<text x="325.0" y="120" text-anchor="middle" font-size="17" font-weight="700" fill="#1f2933">brain capture</text>
+<text x="325.0" y="148" text-anchor="middle" font-size="13.5" fill="#323f4b">Reads it, all local:</text>
+<text x="325.0" y="169" text-anchor="middle" font-size="13.5" fill="#323f4b">PDF · web · OCR</text>
+<text x="325.0" y="190" text-anchor="middle" font-size="13.5" fill="#323f4b">Whisper · yt-dlp</text>
+<text x="325.0" y="211" text-anchor="middle" font-size="13.5" fill="#323f4b">Slack API · git</text>
 <rect x="454" y="92" width="170" height="150" rx="12" fill="#ffffff" stroke="#c98a14" stroke-width="2"/>
-<text x="539.0" y="120" text-anchor="middle" font-size="17" font-weight="700" fill="#1f2933">/learn</text>
-<text x="539.0" y="148" text-anchor="middle" font-size="13.5" fill="#323f4b">Claude Code reads it</text>
-<text x="539.0" y="169" text-anchor="middle" font-size="13.5" fill="#323f4b">and writes draft notes:</text>
-<text x="539.0" y="190" text-anchor="middle" font-size="13.5" fill="#323f4b">one fact + the exact</text>
-<text x="539.0" y="211" text-anchor="middle" font-size="13.5" fill="#323f4b">quote it came from</text>
+<text x="539.0" y="120" text-anchor="middle" font-size="17" font-weight="700" fill="#1f2933">Local model</text>
+<text x="539.0" y="148" text-anchor="middle" font-size="13.5" fill="#323f4b">Proposes notes: one</text>
+<text x="539.0" y="169" text-anchor="middle" font-size="13.5" fill="#323f4b">fact + the exact quote</text>
+<text x="539.0" y="190" text-anchor="middle" font-size="13.5" fill="#323f4b">it came from. Drafts</text>
+<text x="539.0" y="211" text-anchor="middle" font-size="13.5" fill="#323f4b">are never used to answer.</text>
 <rect x="668" y="92" width="170" height="150" rx="12" fill="#ffffff" stroke="#2f9e5f" stroke-width="2"/>
-<text x="753.0" y="120" text-anchor="middle" font-size="17" font-weight="700" fill="#1f2933">brain review</text>
-<text x="753.0" y="148" text-anchor="middle" font-size="13.5" fill="#323f4b">You read the drafts.</text>
-<text x="753.0" y="169" text-anchor="middle" font-size="13.5" fill="#323f4b">Code checks every quote</text>
-<text x="753.0" y="190" text-anchor="middle" font-size="13.5" fill="#323f4b">really occurs in its</text>
-<text x="753.0" y="211" text-anchor="middle" font-size="13.5" fill="#323f4b">source, or refuses.</text>
+<text x="753.0" y="120" text-anchor="middle" font-size="17" font-weight="700" fill="#1f2933">Code checks</text>
+<text x="753.0" y="148" text-anchor="middle" font-size="13.5" fill="#323f4b">Every quote must be</text>
+<text x="753.0" y="169" text-anchor="middle" font-size="13.5" fill="#323f4b">found in its source,</text>
+<text x="753.0" y="190" text-anchor="middle" font-size="13.5" fill="#323f4b">word for word, or the</text>
+<text x="753.0" y="211" text-anchor="middle" font-size="13.5" fill="#323f4b">note is dropped.</text>
 <rect x="882" y="92" width="170" height="150" rx="12" fill="#ffffff" stroke="#2f9e5f" stroke-width="2"/>
 <text x="967.0" y="120" text-anchor="middle" font-size="17" font-weight="700" fill="#1f2933">Trusted notes</text>
 <text x="967.0" y="148" text-anchor="middle" font-size="13.5" fill="#323f4b">Plain Markdown in Git.</text>
@@ -48,8 +48,8 @@
 <line x1="627" y1="167.0" x2="665" y2="167.0" stroke="#52606d" stroke-width="2.5" marker-end="url(#ar)"/>
 <line x1="841" y1="167.0" x2="879" y2="167.0" stroke="#52606d" stroke-width="2.5" marker-end="url(#ar)"/>
 <line x1="1055" y1="167.0" x2="1093" y2="167.0" stroke="#52606d" stroke-width="2.5" marker-end="url(#ar)"/>
-<text x="325.0" y="272" text-anchor="middle" font-size="13" font-weight="600" fill="#52606d">sources/&lt;id&gt;.md,</text>
-<text x="325.0" y="291" text-anchor="middle" font-size="13" fill="#52606d">timestamped, one line each</text>
+<text x="325.0" y="272" text-anchor="middle" font-size="13" font-weight="600" fill="#52606d">sources/&lt;id&gt;.md</text>
+<text x="325.0" y="291" text-anchor="middle" font-size="13" fill="#52606d">a saved text copy</text>
 <text x="539.0" y="272" text-anchor="middle" font-size="13" font-weight="600" fill="#52606d">notes/_draft/</text>
 <text x="539.0" y="291" text-anchor="middle" font-size="13" fill="#52606d">never read by ask</text>
 <text x="753.0" y="272" text-anchor="middle" font-size="13" font-weight="600" fill="#52606d">✗ misquote → rejected</text>
@@ -59,7 +59,7 @@
 <text x="1181.0" y="272" text-anchor="middle" font-size="13" font-weight="600" fill="#52606d">or: NOT_IN_THE_NOTES</text>
 <text x="1181.0" y="291" text-anchor="middle" font-size="13" fill="#52606d">(a gap, not a guess)</text>
 <rect x="705.0" y="58" width="96" height="26" rx="13" fill="#2f9e5f"/>
-<text x="753.0" y="76" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">YOU REVIEW</text>
-<text x="26" y="346" font-size="14.5" fill="#323f4b">Models write notes and answers. Only code decides what is trusted: a note counts only if its quote is found,</text>
+<text x="753.0" y="76" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">YOU ACCEPT</text>
+<text x="26" y="346" font-size="14.5" fill="#323f4b">Models propose notes and write answers. Only code decides what is trusted: a note counts only if its quote is found,</text>
 <text x="26" y="370" font-size="14.5" fill="#323f4b">word for word, in the source it names. Ask something the notes do not cover and it says so.</text>
 </svg>

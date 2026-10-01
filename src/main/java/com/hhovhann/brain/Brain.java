@@ -15,7 +15,7 @@ public final class Brain {
         // Your brain is the folder you are in (or BRAIN_HOME): notes/ holds the notes, sources/ the text copies.
         Path home = Path.of(Models.env("BRAIN_HOME", "")).toAbsolutePath();
         Path dir = home.resolve("notes");
-        if (List.of("check", "verify", "review", "promote", "eval", "ask", "mcp").contains(command) && !java.nio.file.Files.isDirectory(dir)) {
+        if (List.of("check", "verify", "review", "promote", "eval", "ask", "mcp", "capture").contains(command) && !java.nio.file.Files.isDirectory(dir)) {
             System.err.println("""
                     There is no brain in this folder (no notes/ here).
                       Make one:         brain init my-brain      then: cd my-brain
@@ -26,6 +26,7 @@ public final class Brain {
         switch (command) {
             case "doctor" -> System.exit(Doctor.run(System.out));
             case "init" -> System.exit(Init.run(Path.of("").toAbsolutePath(), rest));
+            case "capture", "learn" -> System.exit(Capture.run(dir, home, rest));
             case "add", "ingest" -> System.exit(Ingest.run(home, rest));
             case "review", "promote" -> System.exit(Review.run(dir, home, rest));
             case "verify", "check" -> System.exit(check(dir, home, rest.contains("--drafts")));
@@ -36,21 +37,19 @@ public final class Brain {
                 System.out.println("""
                         second-brain: ask why, get the answer with a verified quote
 
-                        The whole thing is three steps:
-                          1. add      brain add <video-url | recording | slack-link>   (repos and text files need no add)
-                                      then, in Claude Code:  /learn <what> <topic>
-                          2. review   brain review <topic>        read the new notes, then accept them
-                          3. ask      brain ask "why did we ...?"
-
-                        Other commands:
-                          init [folder]   make a new brain folder (notes/ and sources/)
-                          verify          check every note's quote really occurs in its source (no AI)
-                          mcp             serve this brain read-only to Claude Code and other MCP clients
-                          doctor          check Java 27 and the local model server
-                          eval <file>     run a file of test questions
+                          brain capture <anything> [topic]     (--history: also guess which facts replaced which)
+                              read it, write the notes, check every quote, then ask you to accept them.
+                              anything = a repo or folder, a file (pdf, docx, pptx, md, txt, image, subtitles),
+                              a web page or Google Doc link, a video link or recording, or a Slack message link
+                          brain ask "why did we ...?"       answer with the quote and where it came from
+                          brain init [folder]               make a new brain folder (once)
 
                         ask options: --topic <name> (one topic only), --as-of YYYY-MM-DD (as it was then)
-                        Run inside your brain folder, or set BRAIN_HOME. More: README.md""");
+                        Run inside your brain folder, or set BRAIN_HOME.
+
+                        Advanced: verify (re-check every quote, no AI) | review <topic> (accept drafts later) |
+                                  mcp (let Claude Code search the brain) | doctor | eval <file>
+                        More: README.md""");
                 System.exit(command.equals("help") ? 0 : 2);
             }
         }

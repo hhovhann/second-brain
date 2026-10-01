@@ -16,5 +16,5 @@ jobs:
       - name: Unit tests (no model needed)
         run: ./gradlew test installDist
       - name: Every quote in the bundled brain still occurs in its source
-        working-directory: examples/self-demo
-        run: ../../bin/brain verify
+        working-directory: demo
+        run: ../brain verify

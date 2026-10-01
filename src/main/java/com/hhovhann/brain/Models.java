@@ -38,12 +38,21 @@ final class Models {
                 .build();
     }
 
+    /** The model that proposes notes. Defaults to the answer model; set BRAIN_EXTRACT_MODEL to use a smaller, faster one. */
+    static ChatModel extractor() {
+        return chatNamed(env("BRAIN_EXTRACT_MODEL", env("BRAIN_CHAT_MODEL", "qwen/qwen3-14b")));
+    }
+
     static ChatModel chat() {
+        return chatNamed(env("BRAIN_CHAT_MODEL", "qwen/qwen3-14b"));
+    }
+
+    private static ChatModel chatNamed(String model) {
         return OpenAiChatModel.builder()
                 .httpClientBuilder(http())
                 .baseUrl(env("BRAIN_LLM_BASE_URL", "http://localhost:1234/v1"))
                 .apiKey(env("BRAIN_LLM_API_KEY", "lm-studio"))
-                .modelName(env("BRAIN_CHAT_MODEL", "qwen/qwen3-14b"))
+                .modelName(model)
                 .temperature(0.0)
                 .timeout(Duration.ofSeconds(180))
                 .maxRetries(0)

@@ -43,8 +43,9 @@ final class Review {
         int n = 1;
         for (Note note : notes) {
             String problem = problems.get(note.id());
-            System.out.printf("%2d. %s   %s%n      \"%s\"%n      from %s%n%n", n++, note.title(),
-                    problem == null ? "[quote verified]" : "[NOT VERIFIED: " + problem + "]", note.quote(), note.source());
+            System.out.printf("%2d. %s   %s%n      \"%s\"%n      from %s%s%n%n", n++, note.title(),
+                    problem == null ? "[quote verified]" : "[NOT VERIFIED: " + problem + "]", note.quote(), note.source(),
+                    note.supersededBy() == null ? "" : "   (no longer true: replaced by " + note.supersededBy() + ")");
         }
         if (!problems.isEmpty()) {
             System.out.println("Fix or delete the unverified drafts (they are files in notes/_draft/" + topic + "/), then review again.");

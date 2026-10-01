@@ -6,125 +6,110 @@ Where things stand today, then what comes next.
 
 ### What works (verified by running it)
 
-- **Notes**: Markdown files with a verbatim quote, a source, validity dates and replacement links.
-- **`verify` / `review`** (formerly check / promote): drafts are untrusted until accepted in `brain review`; it refuses if any quote,
-  id or supersession link fails. Path traversal and git-argument injection are rejected (tested).
-- **`ask`**: local Qwen3 14B, about 7 s per question, no hosted-model tokens. Cites notes,
-  prints sources from the notes themselves, declines with `NOT_IN_THE_NOTES`. Supports
-  `--project` and `--as-of`. Adds the replacement of any outdated note it retrieves.
-- **`eval`**: runs a gold-question file and writes a report.
-- **`init`, `add`, `review`, `ask`**: your brain is its own folder; `/learn` and `/ask` Claude Code commands are copied into it from `starter/`.
-- **Self-demo**: `examples/self-demo/` is a ready brain with 17 notes about this project, all verified against
-  `docs/DECISIONS.md`; `eval.yaml` has 5 questions (5 of 5 pass on the automatic check).
-- **`add`**: video URL (yt-dlp, local Whisper), recording file, `--screen` (OCR of on-screen
-  text), Slack thread link (own token). Video URL and screen recording were run for real; the
-  Slack path is covered by unit tests against a mock server only. See `docs/INGEST.md`.
-- **`mcp`**: a read-only Model Context Protocol server (`brain_search`, `brain_ask`, `brain_topics`).
-  Verified with a real Claude Code run: it found the tool unprompted and quoted the notes. No tool
-  takes a path or permission; a test enforces it. `brain init` writes the `.mcp.json` for you.
-- **Retrieval**: embedding search fused with exact-word search (BM25), 8 notes per question.
-- 51 unit tests, run by GitHub Actions on every push.
+- **`brain capture <anything>`**: one command. Reads a repo, folder, text, PDF, Word, PowerPoint,
+  image, subtitles, web page, Google Doc, video link, recording or Slack thread; a **local model**
+  proposes notes; code keeps only those whose quote is found word for word in the source and
+  attaches the source itself (commit, file, page, slide, minute); you accept. Nothing leaves the
+  machine except fetching the thing you asked for. Run for real on a Word file, a PDF, an image, a
+  web page, a screen recording, a YouTube video and a 39-commit repository. See [INPUTS.md](INPUTS.md).
+- **`brain ask`**: local Qwen3 14B, about 7 s per question. Cites notes, prints sources from the notes
+  themselves, declines with `NOT_IN_THE_NOTES`. `--topic` and `--as-of`. Fuses embedding and exact-word
+  search, keeps 8 notes, adds the replacement of any outdated note it retrieves.
+- **`brain mcp`**: a read-only Model Context Protocol server (`brain_search`, `brain_ask`,
+  `brain_topics`). Verified with a real Claude Code run: it found the tool unprompted and quoted the
+  notes. No tool takes a path or permission; a test enforces it. `brain init` writes the `.mcp.json`.
+- **`brain init`, `verify`, `review`, `eval`, `doctor`**: make a brain, re-check every quote with no AI,
+  accept drafts later, run gold questions, check the environment.
+- **`demo/`**: a ready brain about this project, 18 notes, all verified against `docs/DECISIONS.md`;
+  `eval.yaml` has 5 questions (5 of 5 pass on the automatic check).
+- **Tests**: 75 unit tests (readers for every format, the extractor's gate, Slack against a mock
+  server, MCP safety, review, init), run by GitHub Actions on every push.
 
 ### Measured, and how far to trust it
 
-On a private project (13 gold questions): 11 right on the first run, 13 right after two
-retrieval/prompt fixes and two note rewrites, so two of those are not blind passes. The notes and
-the answer key were written by the same agent. **Trust level: low to medium.** It shows the
-design works; it does not show it beats Claude Code alone. That benchmark
-([BENCHMARK.md](BENCHMARK.md)) has **not been run**.
+- **`ask`, private project, 13 gold questions:** 11 right on the first run, 13 right after two
+  retrieval and prompt fixes and two note rewrites, so two of those are not blind passes. The notes
+  and the answer key were written by the same agent. After adding exact-word search the answers were
+  the same: no regression, no measurable gain.
+- **Local `capture` quality, on one real repository** (39 commits and 4 docs, 165,000 characters, a
+  14B local model): 12 minutes, **103 notes, every quote verified**. 71 other proposals were thrown
+  away because their quote was not in the source (the gate working). 2 of 31 parts could not be read
+  even after a retry. Against 20 notes written by hand for the same repo: every source I used also
+  produced notes (20 of 20), but the **same sentence** was picked for only 6 of 20, and by eye the
+  facts I cared most about (a tool added and later removed) were mostly missed. So the notes are
+  grounded, not complete. Replacement guesses (`--history`): 15 suggested, about half plausible, so
+  they are off by default (D16). One repository, one run: treat these as a first measurement.
+- **Trust level: low to medium.** It shows the design works; it does not show it beats Claude Code
+  alone. That benchmark ([BENCHMARK.md](BENCHMARK.md)) has **not been run**.
 
 ### Known problems
 
-- A small answer model swaps ambiguous numbers; notes must state one measurement per line.
-- The local answer model picks which notes to cite and can leave one out (seen in the self-demo: the "why no database" note exists but the answer to "why drop the graph database?"
-  did not cite it).
-- Speech-to-text mishears names and numbers; the quote check cannot catch that (only a person
-  listening at the timestamp can).
-- `/learn` sends transcripts to Claude Code, so private recordings are not private end to end.
-- Notes were once lost from an uncommitted folder during development and the cause was never
-  found. Commit your notes (or keep them in a private repository) as soon as you have them.
+- **A 14B local model misses facts** a person would keep, and sometimes quotes more than needed. The
+  gate stops wrong notes, not missing ones.
+- **Replacement detection is weak** and therefore opt-in (`--history`, D16): about half the guesses
+  are right, and you see each one in the review.
+- **Capture is slow on large sources**: about 25 seconds per 6,000 characters on the 14B model (12
+  minutes for a 39-commit repository). It runs once. `BRAIN_EXTRACT_MODEL` can point at a smaller, faster model.
+- Speech-to-text and OCR mishear names and numbers; the check cannot catch that (only a person
+  listening or looking can).
+- The local answer model can leave a relevant note out of its citations and swaps ambiguous numbers.
+  Through MCP, Claude writes the answer instead.
+- Slack was tested against a mock server, not a live workspace.
+- Notes were once lost from an uncommitted folder during development and the cause was never found.
+  `brain init` makes your brain a git repository; commit it.
 
 ### Not built
 
-Model-based extraction (`brain add`), speaker names, login-gated videos, Slack history and files,
-web UI, access control, injection evals, watch mode, deployment. The README must
-never claim these. Order and plan: [ROADMAP.md](ROADMAP.md).
+Excel, email, Confluence, Jira, Notion, login-gated pages and videos, speaker names, Slack history
+and files, web page, access control, injection evals, watch mode, deployment. The README must never
+claim these.
 
 ---
 
 ## What comes next
-Order matters: **prove it, then widen the inputs, then widen the users.** Nothing below is
-built unless it says "done". To propose or request a change, open an issue, or run `/improve`
-in Claude Code, which takes the top open item, writes a failing test first, and records the result.
 
-## v0.1 — the verified core (done)
+Order matters: **prove it, then widen the inputs, then widen the users.** To propose or request a
+change, open an issue, or run `/improve` in Claude Code, which takes the top open item, writes a
+failing test first, and records the result.
 
-- `verify`, `review`, `ask` (`--topic`, `--as-of`), `eval`, `doctor`
-- Notes with validity dates and supersession; retrieval that resolves currency
-- Claude Code commands: `/learn`, `/ask` (in your brain), `/improve` (in this repo)
-- A self-demo: the project's own decision log as a brain (`examples/self-demo`)
+### Done
 
-## v0.1.1 — non-text inputs (done)
+- **v0.1** the verified core: notes with quotes, dates and replacement links; `verify`, `ask`, `eval`
+- **v0.2** video, recordings, Slack; read-only MCP server; hybrid search; CI
+- **v0.3** one command, `capture`, for every input, written by a local model and gated by code;
+  your brain in its own folder; four visible folders in the repository
 
-- `brain add` for video URLs, recordings (speech, and on-screen text with `--screen`) and Slack
-  thread links, producing timestamped transcripts that the existing quote check verifies
-- Live Slack run still to be confirmed with a real workspace
+### v0.4: prove it is worth using
 
-## v0.2 — prove it is worth using
-
-The benchmark in [BENCHMARK.md](BENCHMARK.md) has a fixed rule: if Claude Code alone is within
-one question of this tool on the history questions, the right product is a Claude Code skill, not
-a program. So this comes first.
+The benchmark in [BENCHMARK.md](BENCHMARK.md) has a fixed rule: if Claude Code alone is within one
+question of this tool on the history questions, the right product is a Claude Code skill, not a
+program. So this comes first.
 
 - [ ] Run the benchmark: Claude Code alone vs a knowledge-graph tool vs second-brain, three runs each
-- [x] Keyword search next to vectors, fused by rank. Measured on 13 real questions: no regression, no measurable gain (D14)
+- [ ] Raise the extractor's recall of history facts (added, removed, replaced): measured weak on the
+      first real run. Ideas: a prompt pass aimed at commits that add or remove things, smaller parts, a
+      stronger local model. Measure on more than one repository, with a hand-checked key
 - [ ] Claim-support gate: refuse an answer whose subject appears in no retrieved note
-- [ ] Prompt-injection evals (`injection.yaml`) that fail the build on a leak
-- [x] CI: build, unit tests, and `verify` on `examples/self-demo` on every push
+- [ ] Prompt-injection evals that fail the build on a leak
 
-## v0.3 — more kinds of input
+### v0.5: more sources, better quality
 
-- [ ] `brain learn <file>`: extraction with a local model, for private or bulk material
-- [ ] Speaker names in recordings (diarization), and login-gated videos via a safe cookie path
-- [ ] Slack channel history and file attachments, not only one thread
-- [ ] More source types, all turned into the same timestamped or paged text file:
-      PDF and Word documents, images and screenshots (OCR, the engine already exists),
-      web pages, Google Docs and Drive, email, Confluence and Jira, Teams and Zoom recordings
-      (these need login, so each needs a safe credential path)
-- [ ] Verify a quote against the **audio**, not only the transcript (second transcription pass)
-- [ ] Incremental add: hash sources, process only what changed
+- [ ] Excel, email (`.eml`), Confluence, Jira, Notion; Teams and Zoom recordings (login: each needs a
+      safe credential path)
+- [ ] Speaker names in recordings; Slack channel history and files
+- [ ] Verify a quote against the **audio**, not only the transcript
+- [ ] Incremental capture: hash sources, process only what changed; capture in the background
 - [ ] Source type `diff:` so a quote can be checked against code changes, not only commit messages
+- [ ] Optional stronger writer for notes and answers (a hosted model), local stays the default
 
-## v0.4 — agents use it directly
+### v0.6: people use it
 
-- [x] Read-only MCP server so Claude Code and Codex query the brain without typed commands (done; Codex untested).
-      The reader is fixed at startup and no tool argument can carry permissions (D7); a test asserts it
-- [ ] Answer-model option: a stronger hosted model for answers where a small one garbles numbers,
-      local stays the default
-
-## v0.5 — people use it
-
-- [ ] One-box web page (Spring Boot returns here, see D4) for people who do not use a terminal
+- [ ] A small web page for people who do not use a terminal
 - [ ] Author trust: facts from low-trust authors stay *unconfirmed* until a human confirms them
-- [ ] Team sharing: reviewed notes in a shared repo, access control as a pre-filter
-- [ ] Demo video generated from notes (a prototype exists privately; it needs a voice engine that
-      is not bundled yet)
+- [ ] Team sharing: reviewed notes in a shared repository, access control as a pre-filter
 
-## Later, only if measured to matter
+### Later, only if measured to matter
 
 - Optional graph store behind an interface (D2 records the condition)
 - Hosted deployment with real authentication (see [SECURITY.md](SECURITY.md))
 - Watch mode: new commits and meeting transcripts appear as drafts automatically
-
-## What could be better today
-
-| Weakness | Effect | Planned in |
-|---|---|---|
-| Not benchmarked against Claude Code alone | We do not yet know it is better | v0.2 |
-| The local answer model can omit a relevant note from its citations (search ranks it; Claude via MCP does not have this problem) | Prefer `brain_search` through Claude | v0.4 |
-| A 14B local model garbles ambiguous numbers | Check the quotes beside the answer | v0.4 |
-| Capture uses Claude Code and your quota | Transcripts of private recordings are sent to it; no local capture yet | v0.3 |
-| Speech-to-text can mishear; Slack not tested on a live workspace | Listen at the timestamp for what matters | v0.2 |
-| `git:` quotes check the commit message only | Code changes are invisible | v0.3 |
-| Needs JDK 27 (preview features) and LM Studio | Heavier setup than a script | open |
-| Terminal only | Not for non-developers | v0.5 |

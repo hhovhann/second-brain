@@ -99,3 +99,28 @@ to answer "why did we drop X, and when?" about itself.
 - Retrieval now fuses embedding search with exact-word search (BM25 and rank fusion) and passes 8
   notes. Measured on 13 real questions: no regression and no measurable gain. Kept for exact names
   such as versions and tool names, which embeddings can miss.
+
+## D15 — One command to get knowledge in; the local model proposes, code decides
+- Date: 2026-10-01 · Status: **current** · Supersedes: the separate steps add, learn and review, and writing notes with Claude Code (`/learn`)
+- Evidence: first-time readers saw "tons of commands" and several folders. `brain capture <anything>`
+  now does it all: reads the input, proposes notes, verifies every quote, and asks you to accept.
+- A local model writes the proposals. It never writes the source: code searches the text for the quote
+  and attaches the commit, file, page, slide or minute itself. A proposal whose quote is not found
+  word for word is dropped. So a weak model can only miss facts; it cannot make one up.
+- Nothing leaves the machine: reading, speech-to-text, OCR and note writing are local. This also
+  closes the privacy gap of sending transcripts to a hosted model.
+- Inputs: repos and folders, text, PDF, Word, PowerPoint, images, subtitles, web pages, Google Docs,
+  video links, recordings, Slack threads. A converted source is saved as `sources/<id>.md`.
+- Visible folders in the repository are four: `src`, `docs`, `demo`, `gradle`. The starter files and
+  the speech-to-text helper live inside the program.
+
+## D16 — Replacement marking is opt-in (`--history`)
+- Date: 2026-10-01 · Status: **current**
+- Evidence: on a real repository, `capture` drafted 103 notes with every quote verified, but the
+  local model's guesses about which fact replaced which were about half right (15 suggested; roughly
+  8 plausible, 4 wrong, 3 doubtful). A quote can verify a fact; nothing verifies "no longer true".
+  A wrong mark hides a true note from "current" answers.
+- So `brain capture` writes every note as current. `--history` asks the model, in small batches of
+  related pairs, which later facts replaced earlier ones; code accepts a pair only if the later fact is
+  strictly later, and the review shows each one so a person can reject it.
+- Supersedes: the always-on replacement pass, which also silently skipped itself above 100 notes.
