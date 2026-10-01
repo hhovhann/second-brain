@@ -1,0 +1,30 @@
+# Gold questions about second-brain itself, answered from examples/brain.
+# Format: id, kind (current | why | reversal | decline), ask, expect (phrases a right answer
+# contains), forbid (phrases it must not assert). Run:
+#   BRAIN_DIR=examples/brain build/install/second-brain/bin/second-brain eval examples/self-eval.yaml second-brain
+questions:
+  - id: S1
+    kind: current
+    ask: What is the project called and what is the command?
+    expect: ["second-brain", "brain"]
+    forbid: ["lore is the"]
+
+  - id: S2
+    kind: reversal
+    ask: Was a graph database ever planned, and is it used now?
+    expect: ["Neo4j", "Markdown"]
+
+  - id: S3
+    kind: why
+    ask: Why is there no Spring Boot in version 0.1?
+    expect: ["web framework"]
+
+  - id: S4
+    kind: current
+    ask: Can the MCP server write notes?
+    expect: ["read-only"]
+
+  - id: S5
+    kind: decline
+    ask: Which cloud provider does second-brain run on in production?
+    expect: []

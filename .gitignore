@@ -1,0 +1,33 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.DS_Store
+
+# Private to the maintainer: real notes from real projects, their gold questions and reports,
+# rendered demos, and the local video tooling. Only examples/ is ever published.
+/brain/
+/brain-private/
+/evals/
+/demo/
+/tools/
+/docs/private/
+/.claude/commands/demo.md
+
+# Private raw inputs
+sources/
+inbox/
+
+# Derived index: delete it and it is rebuilt from the notes.
+.brain/
+
+# Secrets
+.env
+.env.*
+
+*.log
+hs_err_pid*
