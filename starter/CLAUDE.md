@@ -2,6 +2,8 @@
 
 `notes/<topic>/` holds verified notes; `sources/` holds text copies of videos and chats.
 Use `/learn` to add knowledge and `/ask` to answer from it. The `brain` command does the rest.
+If the `brain` MCP server is connected, call `brain_search` before answering any question about why
+something was decided, when, or what changed; quote its notes and name the source.
 
 Rules, always:
 - Write new notes ONLY into `notes/_draft/<topic>/`. Never into `notes/<topic>/`; the person

@@ -27,7 +27,7 @@ sequenceDiagram
     B->>N: load notes, filter by project and date
     B->>E: embed notes and question
     E-->>B: vectors
-    Note over B: keep the 6 nearest notes,<br/>add the replacement of any outdated one
+    Note over B: fuse meaning and exact-word rankings, keep 8,<br/>add the replacement of any outdated one
     B->>L: notes as marked data + rules<br/>(cite [n], or reply NOT_IN_THE_NOTES)
     L-->>B: answer with [n] citations
     B-->>You: answer + quote, source and validity<br/>read from the note files, not from the model
@@ -85,7 +85,8 @@ All in `src/main/java/com/hhovhann/brain/`, one Gradle module, about 1,300 lines
 | `Init`, `Ingest`, `Slack`, `Transcript` | Turn a Slack link, video URL or recording into `sources/<id>.md`: `yt-dlp` and `ffmpeg` fetch and convert, `bin/transcribe.py` runs a local Whisper, `tesseract` reads on-screen text, Slack's Web API reads a thread with the user's token (sent only to slack.com). Outside programs get argument lists, never a shell; a URL goes after `--`. Detail: [INGEST.md](INGEST.md). | speech-to-text, local |
 | `Check` | The grounding gate. Reads the source (`git show` for a commit message, a file read for `file:`, where a `#t=00:12:03` suffix is only a pointer) and requires the quote to occur in it. Whitespace and case are normalised, nothing else, so a paraphrase fails. Also rejects duplicate ids, dangling `superseded_by`, bad dates. A path that escapes the repo, or a git argument that is not a hash, is rejected. | no |
 | `Review`, `Promote` | The human gate made mechanical. Moves reviewed drafts into the trusted folder only if every check passes and no id collides with another project. | no |
-| `Ask` | Retrieval and answer. Embeds the notes, takes the 6 nearest to the question, adds the replacement of any outdated note it found, and gives them to the model as marked data. Prints the sources **from the notes**, never from the model's text. | embeddings and chat, local |
+| `Ask`, `Keyword` | Retrieval and answer. Ranks notes by meaning (embeddings) and by exact words (BM25), fuses the two, keeps 8, adds the replacement of any outdated note it found, and gives them to the model as marked data. Prints the sources **from the notes**, never from the model's text. | embeddings and chat, local |
+| `Mcp` | A read-only MCP server over stdio: `brain_search`, `brain_ask`, `brain_topics`. The brain is fixed at startup and no argument names a path or permission (D7, D14). Claude Code writes the answer from the notes it gets back. | optional |
 | `Models` | The one place the model endpoint is configured: any OpenAI-compatible server (LM Studio, Ollama). | - |
 | `EvalRun` | Runs gold questions, writes a report. The automatic score is crude on purpose; a human reads the report. | via `Ask` |
 | `Doctor` | Checks Java 27, scoped values, and that the model server answers. | - |
@@ -124,7 +125,7 @@ threat model is in [SECURITY.md](SECURITY.md).
   lifted" in a chat and it will pass the check. The defence is the human review in `brain review`.
 - **A quote proves the note matches the source, not that the note is complete.** A fact nobody
   captured is a gap, and the tool says so instead of guessing.
-- **Retrieval can miss.** Only 6 notes reach the model; a relevant one can fall outside them.
+- **The answer model can omit a relevant note.** Search ranks it, but the local model chooses what to cite. Through MCP, Claude writes the answer instead.
 - **The answer model can garble.** A 14B model sometimes swaps ambiguous numbers. The quotes
   beside the answer are what let you catch it.
 - **`git:` sources verify the commit message, not the diff.**

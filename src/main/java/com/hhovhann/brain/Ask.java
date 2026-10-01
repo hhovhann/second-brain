@@ -34,10 +34,12 @@ final class Ask {
                 .map(e -> e.vector())
                 .toList();
         float[] q = embeddings.embed(TextSegment.from(question)).content().vector();
-        List<Hit> top = IntStream.range(0, notes.size())
-                .mapToObj(i -> new Hit(0, notes.get(i), cosine(q, vectors.get(i))))
-                .sorted(Comparator.comparingDouble(Hit::score).reversed())
+        List<Integer> byMeaning = IntStream.range(0, notes.size()).boxed()
+                .sorted(Comparator.comparingDouble((Integer i) -> cosine(q, vectors.get(i))).reversed())
+                .toList();
+        List<Hit> top = Keyword.fuse(byMeaning, Keyword.rank(notes, question)).stream()
                 .limit(k)
+                .map(i -> new Hit(0, notes.get(i), cosine(q, vectors.get(i))))
                 .toList();
         List<Hit> ranked = addCurrentVersions(top, notes);
         List<Hit> numbered = new ArrayList<>();

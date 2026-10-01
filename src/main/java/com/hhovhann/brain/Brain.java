@@ -15,7 +15,7 @@ public final class Brain {
         // Your brain is the folder you are in (or BRAIN_HOME): notes/ holds the notes, sources/ the text copies.
         Path home = Path.of(Models.env("BRAIN_HOME", "")).toAbsolutePath();
         Path dir = home.resolve("notes");
-        if (List.of("check", "verify", "review", "promote", "eval", "ask").contains(command) && !java.nio.file.Files.isDirectory(dir)) {
+        if (List.of("check", "verify", "review", "promote", "eval", "ask", "mcp").contains(command) && !java.nio.file.Files.isDirectory(dir)) {
             System.err.println("""
                     There is no brain in this folder (no notes/ here).
                       Make one:         brain init my-brain      then: cd my-brain
@@ -31,6 +31,7 @@ public final class Brain {
             case "verify", "check" -> System.exit(check(dir, home, rest.contains("--drafts")));
             case "eval" -> System.exit(rest.isEmpty() ? 2 : EvalRun.run(dir, home, Path.of(rest.get(0)), rest.size() > 1 ? rest.get(1) : null));
             case "ask" -> System.exit(askCommand(dir, rest));
+            case "mcp" -> System.exit(Mcp.serve(dir, System.in, System.out));
             default -> {
                 System.out.println("""
                         second-brain: ask why, get the answer with a verified quote
@@ -44,6 +45,7 @@ public final class Brain {
                         Other commands:
                           init [folder]   make a new brain folder (notes/ and sources/)
                           verify          check every note's quote really occurs in its source (no AI)
+                          mcp             serve this brain read-only to Claude Code and other MCP clients
                           doctor          check Java 27 and the local model server
                           eval <file>     run a file of test questions
 
@@ -102,15 +104,20 @@ public final class Brain {
             return null;
         }
         final java.time.LocalDate day = asOf;
-        List<Note> notes = Note.loadAll(dir).stream()
-                .filter(n -> project == null || n.project().equals(project))
-                .filter(n -> day == null || n.validOn(day))
-                .toList();
+        List<Note> notes = select(dir, project, day);
         if (notes.isEmpty()) {
             return new Ask.Answer("NOT_IN_THE_NOTES", List.of(), false, true);
         }
-        List<Ask.Hit> hits = Ask.retrieve(notes, Models.embeddings(), question, 6);
+        List<Ask.Hit> hits = Ask.retrieve(notes, Models.embeddings(), question, 8);
         return Ask.answer(Models.chat(), hits, question, asOf);
+    }
+
+    /** The trusted notes a question may use: one topic if given, and only those true on {@code day} if given. */
+    static List<Note> select(Path dir, String project, java.time.LocalDate day) throws IOException {
+        return Note.loadAll(dir).stream()
+                .filter(n -> project == null || n.project().equals(project))
+                .filter(n -> day == null || n.validOn(day))
+                .toList();
     }
 
     static String render(Ask.Answer answer, java.time.LocalDate asOf) {

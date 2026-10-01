@@ -1,5 +1,7 @@
 # second-brain
 
+![ci](https://github.com/hhovhann/second-brain/actions/workflows/ci.yml/badge.svg)
+
 ### Ask *why* a project is the way it is. Get the answer with a quote you can verify.
 
 ![How second-brain works](docs/architecture.svg)
@@ -22,14 +24,14 @@ shows its proof, or says "not in the notes".
 
 ## Try it now (2 minutes): the project explains itself
 
-`examples/self-demo` is a ready-made brain **about this very project**: 16 notes, every quote
+`examples/self-demo` is a ready-made brain **about this very project**: 17 notes, every quote
 checked against [`docs/DECISIONS.md`](docs/DECISIONS.md). Real output:
 
 ```text
 $ cd examples/self-demo
 
 $ brain verify                      # no AI involved, just a string comparison
-16 notes (11 current, 5 superseded): every quote verified against its source
+17 notes (12 current, 5 superseded): every quote verified against its source
 
 $ brain ask "Why is there no Spring Boot in version 0.1?"
 Version 0.1 uses plain Java instead of Spring Boot because the project initially aimed for a
@@ -107,20 +109,32 @@ export PATH="$PWD/bin:$PATH"       # now `brain` works from any folder
 brain doctor                       # checks Java and the model server
 ```
 
-## How to ask Claude Code to use it
+## Let Claude Code use it by itself
 
-Claude Code **does not use second-brain on its own yet**; it uses it when you ask. Easiest first:
+second-brain includes a **read-only MCP server**. Once connected, Claude Code searches your brain
+*before* answering "why was this decided / when / what changed", without being told to.
+`brain init` already wired it up:
 
-1. **In your brain folder**, use the commands: `/ask why did we drop the graph database?` and `/learn <what> <topic>`.
-2. **From any other project**, say it: *"Run `brain ask --topic my-project "why did we remove the page graph?"` (from `~/my-brain`) and show me the quote. If it says NOT_IN_THE_NOTES, tell me the reason was never recorded."*
-3. **Make it a habit**: paste into that project's `CLAUDE.md`:
-   ```markdown
-   For "why was this decided / when / what changed" questions, first run, from ~/my-brain:
-   brain ask --topic my-project "<question>". Quote what it prints. If it says
-   NOT_IN_THE_NOTES, say it is not recorded; do not guess.
-   ```
+- **Inside your brain folder:** open Claude Code there and approve the `brain` server the first time it asks.
+- **From any project:** run once, with the line `brain init` printed:
+  `claude mcp add --scope user brain -e BRAIN_HOME=~/my-brain -- /path/to/second-brain/bin/brain mcp`
 
-An MCP server would let Claude find the brain and use it **automatically**. It is the next big item (below).
+**Proof it works** (a real run, in an empty folder, with no mention of the brain in the question):
+
+```text
+> Why did the second-brain project drop its graph database? Keep it to two sentences.
+  tool call: brain_search {"query": "second-brain project dropped graph database, why"}
+  Claude: The earlier prototype's Neo4j + Postgres + Redis stack was replaced by plain Markdown
+  files in Git. The recorded reasons are that Postgres and Redis went unused, "a local tool
+  should not need Docker," and a few thousand notes fit in memory. The notes don't give a
+  separate reason for Neo4j itself, so that part is inferred.
+```
+
+It found the tool on its own, quoted the notes, and said what the notes do **not** say. Three tools,
+all read-only, none takes a path or a permission (a test enforces that): `brain_search` (best notes
+with their verified quotes), `brain_ask` (a finished answer from the local model), `brain_topics`.
+
+Without MCP, you can still say it in a prompt, or use `/ask` and `/learn` inside your brain folder.
 
 ## Why not just ask Claude Code or Codex?
 
@@ -142,14 +156,13 @@ its fixed pass/fail rule are in [docs/BENCHMARK.md](docs/BENCHMARK.md).
 
 ## Status and next steps
 
-**v0.2 prototype**: the core works and is tested (38 tests). It is **not yet measured against
-Claude Code alone**. Next, in order:
+**v0.2 prototype**: the core works and is tested (51 tests, run by CI on every push). It is **not
+yet measured against Claude Code alone**. Next, in order:
 
 1. **Run that benchmark**: it decides whether this is worth building further.
-2. **MCP server** (read-only): Claude uses the brain automatically.
-3. **Local note writing**: so private recordings never go to a cloud model.
-4. **Better retrieval**: the demo missed one relevant note because only 6 reach the model.
-5. **More sources**: PDF, Word, images, web pages. Then a small web page.
+2. **Local note writing**: so private recordings never go to a cloud model.
+3. **More sources**: PDF, Word, images, web pages.
+4. **A small web page** for people who don't use a terminal.
 
 Honest limits, what works and what doesn't: [docs/ROADMAP.md](docs/ROADMAP.md).
 

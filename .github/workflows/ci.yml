@@ -1,0 +1,20 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "27"
+      - name: Unit tests (no model needed)
+        run: ./gradlew test installDist
+      - name: Every quote in the bundled brain still occurs in its source
+        working-directory: examples/self-demo
+        run: ../../bin/brain verify

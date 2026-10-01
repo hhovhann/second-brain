@@ -87,3 +87,15 @@ to answer "why did we drop X, and when?" about itself.
   old command names still work as aliases.
 - Each video, recording or Slack thread becomes one file, `sources/<id>.md`; audio, video and
   frames are temporary and deleted.
+
+## D14 — The MCP server returns notes; the calling model writes the answer
+- Date: 2026-10-01 · Status: **current**
+- Evidence: in a real run, Claude Code called `brain_search` on its own, without being told the
+  brain existed, and answered with the exact quote about Docker that the local 14B answer model had
+  left out of its own answer on the same notes.
+- `brain_search` returns the best notes with their verified quote, source and validity; `brain_ask`
+  (the local model) exists but is secondary. Both are read-only and take no path or permission
+  argument (D7); a test asserts the argument names.
+- Retrieval now fuses embedding search with exact-word search (BM25 and rank fusion) and passes 8
+  notes. Measured on 13 real questions: no regression and no measurable gain. Kept for exact names
+  such as versions and tool names, which embeddings can miss.

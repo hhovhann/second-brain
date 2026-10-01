@@ -14,12 +14,16 @@ Where things stand today, then what comes next.
   `--project` and `--as-of`. Adds the replacement of any outdated note it retrieves.
 - **`eval`**: runs a gold-question file and writes a report.
 - **`init`, `add`, `review`, `ask`**: your brain is its own folder; `/learn` and `/ask` Claude Code commands are copied into it from `starter/`.
-- **Self-demo**: `examples/self-demo/` is a ready brain with 16 notes about this project, all verified against
+- **Self-demo**: `examples/self-demo/` is a ready brain with 17 notes about this project, all verified against
   `docs/DECISIONS.md`; `eval.yaml` has 5 questions (5 of 5 pass on the automatic check).
 - **`add`**: video URL (yt-dlp, local Whisper), recording file, `--screen` (OCR of on-screen
   text), Slack thread link (own token). Video URL and screen recording were run for real; the
   Slack path is covered by unit tests against a mock server only. See `docs/INGEST.md`.
-- 38 unit tests.
+- **`mcp`**: a read-only Model Context Protocol server (`brain_search`, `brain_ask`, `brain_topics`).
+  Verified with a real Claude Code run: it found the tool unprompted and quoted the notes. No tool
+  takes a path or permission; a test enforces it. `brain init` writes the `.mcp.json` for you.
+- **Retrieval**: embedding search fused with exact-word search (BM25), 8 notes per question.
+- 51 unit tests, run by GitHub Actions on every push.
 
 ### Measured, and how far to trust it
 
@@ -32,8 +36,7 @@ design works; it does not show it beats Claude Code alone. That benchmark
 ### Known problems
 
 - A small answer model swaps ambiguous numbers; notes must state one measurement per line.
-- Only the 6 nearest notes reach the model, so a relevant note can be missed (seen in the
-  self-demo: the "why no database" note exists but the answer to "why drop the graph database?"
+- The local answer model picks which notes to cite and can leave one out (seen in the self-demo: the "why no database" note exists but the answer to "why drop the graph database?"
   did not cite it).
 - Speech-to-text mishears names and numbers; the quote check cannot catch that (only a person
   listening at the timestamp can).
@@ -44,7 +47,7 @@ design works; it does not show it beats Claude Code alone. That benchmark
 ### Not built
 
 Model-based extraction (`brain add`), speaker names, login-gated videos, Slack history and files,
-MCP server, web UI, keyword search, access control, injection evals, watch mode, deployment. The README must
+web UI, access control, injection evals, watch mode, deployment. The README must
 never claim these. Order and plan: [ROADMAP.md](ROADMAP.md).
 
 ---
@@ -74,10 +77,10 @@ one question of this tool on the history questions, the right product is a Claud
 a program. So this comes first.
 
 - [ ] Run the benchmark: Claude Code alone vs a knowledge-graph tool vs second-brain, three runs each
-- [ ] Keyword search next to vectors (embeddings miss exact names), fused by rank
+- [x] Keyword search next to vectors, fused by rank. Measured on 13 real questions: no regression, no measurable gain (D14)
 - [ ] Claim-support gate: refuse an answer whose subject appears in no retrieved note
 - [ ] Prompt-injection evals (`injection.yaml`) that fail the build on a leak
-- [ ] CI: build, unit tests, and `verify` on `examples/self-demo` on every push
+- [x] CI: build, unit tests, and `verify` on `examples/self-demo` on every push
 
 ## v0.3 — more kinds of input
 
@@ -94,7 +97,7 @@ a program. So this comes first.
 
 ## v0.4 — agents use it directly
 
-- [ ] Read-only MCP server so Claude Code and Codex query the brain without typed commands.
+- [x] Read-only MCP server so Claude Code and Codex query the brain without typed commands (done; Codex untested).
       The reader is fixed at startup and no tool argument can carry permissions (D7); a test asserts it
 - [ ] Answer-model option: a stronger hosted model for answers where a small one garbles numbers,
       local stays the default
@@ -118,7 +121,7 @@ a program. So this comes first.
 | Weakness | Effect | Planned in |
 |---|---|---|
 | Not benchmarked against Claude Code alone | We do not yet know it is better | v0.2 |
-| Only the 6 nearest notes reach the model | A relevant note can be missed | v0.2 |
+| The local answer model can omit a relevant note from its citations (search ranks it; Claude via MCP does not have this problem) | Prefer `brain_search` through Claude | v0.4 |
 | A 14B local model garbles ambiguous numbers | Check the quotes beside the answer | v0.4 |
 | Capture uses Claude Code and your quota | Transcripts of private recordings are sent to it; no local capture yet | v0.3 |
 | Speech-to-text can mishear; Slack not tested on a live workspace | Listen at the timestamp for what matters | v0.2 |
