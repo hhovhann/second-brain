@@ -11,34 +11,44 @@ public final class Brain {
 
     public static void main(String[] args) throws Exception {
         String command = args.length == 0 ? "help" : args[0];
-        Path root = Path.of("").toAbsolutePath();
-        Path dir = root.resolve(Models.env("BRAIN_DIR", "brain"));
-        if (List.of("check", "promote", "eval", "ask").contains(command) && !java.nio.file.Files.isDirectory(dir)) {
-            System.err.println("No notes at " + dir + ". Try the bundled example: BRAIN_DIR=examples/brain "
-                    + "(see README.md), or run /capture to create your own.");
+        List<String> rest = List.of(args).subList(Math.min(1, args.length), args.length);
+        // Your brain is the folder you are in (or BRAIN_HOME): notes/ holds the notes, sources/ the text copies.
+        Path home = Path.of(Models.env("BRAIN_HOME", "")).toAbsolutePath();
+        Path dir = home.resolve("notes");
+        if (List.of("check", "verify", "review", "promote", "eval", "ask").contains(command) && !java.nio.file.Files.isDirectory(dir)) {
+            System.err.println("""
+                    There is no brain in this folder (no notes/ here).
+                      Make one:         brain init my-brain      then: cd my-brain
+                      Try the demo:     cd examples/self-demo    (inside the second-brain folder)
+                      Use another one:  BRAIN_HOME=/path/to/my-brain brain ask "..." """);
             System.exit(2);
         }
         switch (command) {
             case "doctor" -> System.exit(Doctor.run(System.out));
-            case "ingest" -> System.exit(Ingest.run(root, List.of(args).subList(1, args.length)));
-            case "check" -> System.exit(check(dir, root, List.of(args).contains("--drafts")));
-            case "promote" -> System.exit(args.length < 2 ? 2 : Promote.run(dir, root, args[1]));
-            case "eval" -> System.exit(args.length < 2 ? 2 : EvalRun.run(dir, root, Path.of(args[1]), args.length > 2 ? args[2] : null));
-            case "ask" -> System.exit(askCommand(dir, List.of(args).subList(1, args.length)));
+            case "init" -> System.exit(Init.run(Path.of("").toAbsolutePath(), rest));
+            case "add", "ingest" -> System.exit(Ingest.run(home, rest));
+            case "review", "promote" -> System.exit(Review.run(dir, home, rest));
+            case "verify", "check" -> System.exit(check(dir, home, rest.contains("--drafts")));
+            case "eval" -> System.exit(rest.isEmpty() ? 2 : EvalRun.run(dir, home, Path.of(rest.get(0)), rest.size() > 1 ? rest.get(1) : null));
+            case "ask" -> System.exit(askCommand(dir, rest));
             default -> {
                 System.out.println("""
-                        second-brain
+                        second-brain: ask why, get the answer with a verified quote
 
-                          ingest <slack-link|video-url|file> [--name id] [--screen]
-                                         turn a Slack thread, video or recording into a transcript in sources/
-                          check [--drafts]  verify every note's quote really occurs in its source
-                          promote <project> move reviewed drafts into brain/ (refuses if any quote fails)
-                          eval <file> [project]  run the gold questions and write a report
-                          ask [--project p] [--as-of YYYY-MM-DD] <question>
-                                         answer from the notes, with the quotes behind the answer
-                          doctor         check Java 27, scoped values, and the local model server
+                        The whole thing is three steps:
+                          1. add      brain add <video-url | recording | slack-link>   (repos and text files need no add)
+                                      then, in Claude Code:  /learn <what> <topic>
+                          2. review   brain review <topic>        read the new notes, then accept them
+                          3. ask      brain ask "why did we ...?"
 
-                        Notes live in brain/ (set BRAIN_DIR to use another folder). See README.md.""");
+                        Other commands:
+                          init [folder]   make a new brain folder (notes/ and sources/)
+                          verify          check every note's quote really occurs in its source (no AI)
+                          doctor          check Java 27 and the local model server
+                          eval <file>     run a file of test questions
+
+                        ask options: --topic <name> (one topic only), --as-of YYYY-MM-DD (as it was then)
+                        Run inside your brain folder, or set BRAIN_HOME. More: README.md""");
                 System.exit(command.equals("help") ? 0 : 2);
             }
         }
@@ -69,7 +79,7 @@ public final class Brain {
         List<String> question = new java.util.ArrayList<>();
         for (int i = 0; i < words.size(); i++) {
             switch (words.get(i)) {
-                case "--project" -> project = words.get(++i);
+                case "--topic", "--project" -> project = words.get(++i);
                 case "--as-of" -> asOf = java.time.LocalDate.parse(words.get(++i));
                 default -> question.add(words.get(i));
             }

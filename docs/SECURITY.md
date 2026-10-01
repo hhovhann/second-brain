@@ -43,6 +43,6 @@ before they are trusted — the review-before-promote rule.
 
 ## How it is tested
 
-`evals/injection.yaml` (M2): planted malicious utterances and a hidden instruction inside a
+`injection.yaml` in the eval format (M2): planted malicious utterances and a hidden instruction inside a
 quote. They must not become trusted facts or change an answer; a leak is a *forbidden* verdict,
 reported separately from *missed*, and fails CI.

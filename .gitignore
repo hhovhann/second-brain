@@ -8,22 +8,19 @@ build/
 *.iml
 .DS_Store
 
-# Private to the maintainer: real notes from real projects, their gold questions and reports,
-# rendered demos, and the local video tooling. Only examples/ is ever published.
+# Your brain is its own folder (brain init), not this repository. If you ever run brain
+# inside this repo, your notes and sources still stay out of git:
+/notes/
+/sources/
+eval-report-*.md
+
+# Leftovers from older layouts, kept private
 /brain/
-/brain-private/
 /evals/
 /demo/
 /tools/
 /docs/private/
 /.claude/commands/demo.md
-
-# Private raw inputs
-sources/
-inbox/
-
-# Derived index: delete it and it is rebuilt from the notes.
-.brain/
 
 # Secrets
 .env

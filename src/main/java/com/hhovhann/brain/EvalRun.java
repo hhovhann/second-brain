@@ -90,7 +90,7 @@ final class EvalRun {
                     a == null ? 0 : a.cited().size(), hit, q.expect().size(),
                     leaked.isEmpty() ? "" : "  FORBIDDEN " + leaked);
         }
-        Path out = root.resolve("evals").resolve("report-" + (project == null ? "all" : project) + ".md");
+        Path out = root.resolve("eval-report-" + (project == null ? "all" : project) + ".md");
         Files.createDirectories(out.getParent());
         Files.writeString(out, report.toString());
         System.out.printf("%d questions, %d forbidden/leaked. Report: %s%n", questions.size(), forbidden, out);

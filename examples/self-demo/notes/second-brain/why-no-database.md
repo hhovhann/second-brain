@@ -3,7 +3,7 @@ id: why-no-database
 type: decision
 valid_from: 2026-10-01
 status: current
-repo: .
+repo: ../..
 source: file:docs/DECISIONS.md
 quote: a local tool should not need Docker.
 ---

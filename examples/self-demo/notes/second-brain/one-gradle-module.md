@@ -3,7 +3,7 @@ id: one-gradle-module
 type: decision
 valid_from: 2026-10-01
 status: current
-repo: .
+repo: ../..
 source: file:docs/DECISIONS.md
 quote: Split when a seam hurts, not before.
 ---

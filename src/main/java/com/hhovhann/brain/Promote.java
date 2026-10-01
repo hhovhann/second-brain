@@ -17,13 +17,13 @@ import java.util.stream.Stream;
  */
 final class Promote {
 
-    private static final Pattern PROJECT = Pattern.compile("[a-z0-9][a-z0-9-]{0,63}");
+    static final Pattern PROJECT = Pattern.compile("[a-z0-9][a-z0-9-]{0,63}");
 
     private Promote() {}
 
     static int run(Path brainDir, Path root, String project) throws IOException {
         if (!PROJECT.matcher(project).matches()) {
-            System.err.println("project must be lowercase letters, digits and dashes: " + project);
+            System.err.println("topic must be lowercase letters, digits and dashes: " + project);
             return 2;
         }
         Path draftDir = brainDir.resolve("_draft").resolve(project);
@@ -62,7 +62,7 @@ final class Promote {
                 Files.delete(draftDir);
             }
         }
-        System.out.printf("Promoted %d notes into brain/%s/ — every quote verified.%n", drafts.size(), project);
+        System.out.printf("Added %d note%s to notes/%s/ — every quote verified.%n", drafts.size(), drafts.size() == 1 ? "" : "s", project);
         return 0;
     }
 }

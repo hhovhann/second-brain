@@ -3,7 +3,7 @@ id: drafts-are-untrusted
 type: decision
 valid_from: 2026-10-01
 status: current
-repo: .
+repo: ../..
 source: file:docs/DECISIONS.md
 quote: `Note.loadAll` skips `_draft/`; only `promote` moves notes out
 ---

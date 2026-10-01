@@ -3,7 +3,7 @@ id: retrieval-resolves-currency
 type: decision
 valid_from: 2026-10-01
 status: current
-repo: .
+repo: ../..
 source: file:docs/DECISIONS.md
 quote: because the stale note matched the question best
 ---

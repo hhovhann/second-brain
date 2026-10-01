@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
- * Turns a Slack link, a video URL, or a recording on disk into {@code sources/<id>/transcript.md}.
+ * Turns a Slack link, a video URL, or a recording on disk into one text file, {@code sources/<id>.md}.
  *
  * <p>Everything downstream already works on text, so this is the only new trust boundary: after
  * it, a note is verified against the transcript with the same string comparison as any file.
@@ -81,7 +81,7 @@ final class Ingest {
             }
         }
         if (input == null) {
-            System.err.println("usage: ingest <slack-link | video-url | recording-file> [--name id] [--screen]");
+            System.err.println("usage: brain add <slack-link | video-url | recording-file> [--name id] [--screen]");
             return 2;
         }
         Kind kind = classify(input);
@@ -99,23 +99,25 @@ final class Ingest {
             System.err.println("name must be lowercase letters, digits and dashes: " + id);
             return 2;
         }
-        Path dir = root.resolve("sources").resolve(id);
-        Files.createDirectories(dir);
+        Path sources = Files.createDirectories(root.resolve("sources"));
+        Path out = sources.resolve(id + ".md");
+        Path dir = Files.createTempDirectory("brain-add-");   // audio, video and frames live here, then are deleted
         try {
             String text = switch (kind) {
                 case SLACK -> slack(input);
                 case URL -> media(input, dir, screen);
                 case FILE -> recording(Path.of(input).toAbsolutePath(), input, dir, screen);
             };
-            Files.writeString(dir.resolve("transcript.md"), text);
+            Files.writeString(out, text);
         } catch (IOException | IllegalArgumentException e) {
-            System.err.println("ingest failed: " + e.getMessage());
+            System.err.println("add failed: " + e.getMessage());
             return 1;
+        } finally {
+            deleteTree(dir);
         }
-        long lines = Files.readAllLines(dir.resolve("transcript.md")).stream().filter(l -> l.startsWith("[")).count();
-        System.out.printf("%d lines -> %s%n", lines, dir.resolve("transcript.md"));
-        System.out.printf("Next: /capture sources/%s <project>   (quotes must sit inside one line; "
-                + "sources/ is private and git-ignored)%n", id);
+        long lines = Files.readAllLines(out).stream().filter(l -> l.startsWith("[")).count();
+        System.out.printf("Saved %d lines of text to sources/%s.md%n", lines, id);
+        System.out.printf("Next, in Claude Code:  /learn sources/%s.md <topic>%n", id);
         return 0;
     }
 
@@ -166,7 +168,7 @@ final class Ingest {
                     "-vn", "-ar", "16000", "-ac", "1", wav.toString()), 30 * 60);
         }
         System.out.println("Transcribing locally...");
-        String json = exec(List.of(Models.env("BRAIN_PYTHON", "python3"), "scripts/transcribe.py", wav.toString()), 3 * 60 * 60);
+        String json = exec(List.of(Models.env("BRAIN_PYTHON", "python3"), Path.of(Models.env("BRAIN_TOOL_DIR", ".")).resolve("bin/transcribe.py").toString(), wav.toString()), 3 * 60 * 60);
         List<Transcript.Segment> segments = new ArrayList<>();
         for (JsonNode s : JSON.readTree(json)) {
             segments.add(new Transcript.Segment(s.path("start").asDouble(), s.path("text").asText(), false));
@@ -231,6 +233,14 @@ final class Ingest {
             return new String(stdout.get(), StandardCharsets.UTF_8);
         } finally {
             Files.deleteIfExists(err);
+        }
+    }
+
+    private static void deleteTree(Path dir) {
+        try (Stream<Path> all = Files.walk(dir)) {
+            all.sorted(java.util.Comparator.reverseOrder()).forEach(p -> p.toFile().delete());
+        } catch (IOException ignored) {
+            // a temp folder that cannot be removed is not worth failing the command
         }
     }
 

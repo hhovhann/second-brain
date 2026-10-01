@@ -10,7 +10,7 @@ Everything else follows from that.
 
 Two steps use a model: **capture** (Claude Code writes draft notes) and **ask** (a local model
 writes the answer). Three steps are plain code that cannot be talked into anything: **check**,
-**promote**, and the **provenance printout** at the end of `ask`. The left half of the picture is
+**review**, and the **provenance printout** at the end of `ask`. The left half of the picture is
 where outside text lives (a model may read it, nothing there is trusted); the right half is where
 only verified notes exist.
 
@@ -40,11 +40,11 @@ flowchart LR
     A["Slack link"] --> I
     B["Video URL"] --> I
     C["Recording file"] --> I
-    I["brain ingest<br/>yt-dlp · ffmpeg · Whisper · OCR · Slack API"] --> T["sources/&lt;id&gt;/transcript.md<br/>[00:12:03] one segment per line"]
+    I["brain add<br/>yt-dlp · ffmpeg · Whisper · OCR · Slack API"] --> T["sources/&lt;id&gt;/<id>.md<br/>[00:12:03] one segment per line"]
     G["Git repo, text files"] --> K
-    T --> K["/capture<br/>Claude Code drafts notes"]
-    K --> D["brain/_draft/"]
-    D -->|"you review"| P["brain promote<br/>(check: every quote in its source)"]
+    T --> K["/learn<br/>Claude Code drafts notes"]
+    K --> D["notes/_draft/"]
+    D -->|"you review"| P["brain review<br/>(check: every quote in its source)"]
     P --> N["brain/&lt;project&gt;/"]
     style D fill:#fff4de,stroke:#c98a14
     style N fill:#e5f5ec,stroke:#2f9e5f
@@ -82,9 +82,9 @@ All in `src/main/java/com/hhovhann/brain/`, one Gradle module, about 1,300 lines
 | Class | Job | Uses a model? |
 |---|---|---|
 | `Note` | Parse and load notes. Skips `_draft/` so unreviewed notes can never be read. | no |
-| `Ingest`, `Slack`, `Transcript` | Turn a Slack link, video URL or recording into `sources/<id>/transcript.md`: `yt-dlp` and `ffmpeg` fetch and convert, `scripts/transcribe.py` runs a local Whisper, `tesseract` reads on-screen text, Slack's Web API reads a thread with the user's token (sent only to slack.com). Outside programs get argument lists, never a shell; a URL goes after `--`. Detail: [INGEST.md](INGEST.md). | speech-to-text, local |
+| `Init`, `Ingest`, `Slack`, `Transcript` | Turn a Slack link, video URL or recording into `sources/<id>.md`: `yt-dlp` and `ffmpeg` fetch and convert, `bin/transcribe.py` runs a local Whisper, `tesseract` reads on-screen text, Slack's Web API reads a thread with the user's token (sent only to slack.com). Outside programs get argument lists, never a shell; a URL goes after `--`. Detail: [INGEST.md](INGEST.md). | speech-to-text, local |
 | `Check` | The grounding gate. Reads the source (`git show` for a commit message, a file read for `file:`, where a `#t=00:12:03` suffix is only a pointer) and requires the quote to occur in it. Whitespace and case are normalised, nothing else, so a paraphrase fails. Also rejects duplicate ids, dangling `superseded_by`, bad dates. A path that escapes the repo, or a git argument that is not a hash, is rejected. | no |
-| `Promote` | The human gate made mechanical. Moves reviewed drafts into the trusted folder only if every check passes and no id collides with another project. | no |
+| `Review`, `Promote` | The human gate made mechanical. Moves reviewed drafts into the trusted folder only if every check passes and no id collides with another project. | no |
 | `Ask` | Retrieval and answer. Embeds the notes, takes the 6 nearest to the question, adds the replacement of any outdated note it found, and gives them to the model as marked data. Prints the sources **from the notes**, never from the model's text. | embeddings and chat, local |
 | `Models` | The one place the model endpoint is configured: any OpenAI-compatible server (LM Studio, Ollama). | - |
 | `EvalRun` | Runs gold questions, writes a report. The automatic score is crude on purpose; a human reads the report. | via `Ask` |
@@ -121,7 +121,7 @@ threat model is in [SECURITY.md](SECURITY.md).
 ## What the design does not guarantee
 
 - **A real quote is not a true or authorised one.** Someone can write "Decision: the freeze is
-  lifted" in a chat and it will pass the check. The defence is the human review before `promote`.
+  lifted" in a chat and it will pass the check. The defence is the human review in `brain review`.
 - **A quote proves the note matches the source, not that the note is complete.** A fact nobody
   captured is a gap, and the tool says so instead of guessing.
 - **Retrieval can miss.** Only 6 notes reach the model; a relevant one can fall outside them.

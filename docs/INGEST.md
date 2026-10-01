@@ -1,12 +1,12 @@
 # Ingest: Slack links, video URLs and recordings
 
-`brain ingest` turns a source that is not text into a text file, `sources/<id>/transcript.md`.
-After that nothing is special: `/capture` writes notes from the transcript, and `brain check`
+`brain add` turns a source that is not text into a text file, `sources/<id>.md`.
+After that nothing is special: `/learn` writes notes from the transcript, and `brain verify`
 verifies each note's quote against it with the same string comparison as any other file.
 
 ```
 Slack link ─────┐
-Video URL ──────┼─► brain ingest ─► sources/<id>/transcript.md ─► /capture ─► check ─► promote ─► ask
+Video URL ──────┼─► brain add ─► sources/<id>.md ─► /learn ─► review ─► ask
 Recording file ─┘     (local)         one line per segment, timestamped
 ```
 
@@ -26,9 +26,9 @@ Recording file ─┘     (local)         one line per segment, timestamped
 ## Video URL
 
 ```bash
-brain ingest "https://www.youtube.com/watch?v=jNQXAC9IVRw"
+brain add "https://www.youtube.com/watch?v=jNQXAC9IVRw"
 # Downloading "Me at the zoo" (0 min)...  Transcribing locally...
-# 4 lines -> sources/video-4b0f48e4f4/transcript.md
+# 4 lines -> sources/video-4b0f48e4f4.md
 ```
 
 Any site `yt-dlp` supports. The audio is downloaded and transcribed on your machine.
@@ -44,8 +44,8 @@ Source: https://www.youtube.com/watch?v=jNQXAC9IVRw
 ## Screen recording (or any recording file)
 
 ```bash
-brain ingest ~/Movies/standup-oct-3.mov            # what was said
-brain ingest ~/Movies/standup-oct-3.mov --screen   # what was said, plus text visible on screen
+brain add ~/Movies/standup-oct-3.mov            # what was said
+brain add ~/Movies/standup-oct-3.mov --screen   # what was said, plus text visible on screen
 ```
 
 `--screen` samples a frame every 10 seconds (at most 360, so the first hour), reads the text in
@@ -72,8 +72,8 @@ with a token you provide:
 3. Copy a message link (message menu → Copy link) and run:
 
 ```bash
-brain ingest "https://yourteam.slack.com/archives/C0123ABCD/p1727700000123456"
-# 7 lines -> sources/slack-c0123abcd-1727700000123456/transcript.md
+brain add "https://yourteam.slack.com/archives/C0123ABCD/p1727700000123456"
+# 7 lines -> sources/slack-c0123abcd-1727700000123456.md
 ```
 
 The whole thread is read, one line per message: `[2026-09-30 14:03] Ana: Drop the graph db…`.
@@ -83,22 +83,22 @@ Not read: files, canvases, huddles, edits history, DMs you cannot already see.
 ## Then capture, verify, ask
 
 ```
-/capture sources/video-4b0f48e4f4 zoo-demo
-brain check --drafts && brain promote zoo-demo
+/learn sources/video-4b0f48e4f4.md zoo-demo
+brain review zoo-demo
 brain ask --project zoo-demo "What did the speaker say about elephants?"
 ```
 
-A note quotes inside **one line** and may point at the moment: `source: file:transcript.md#t=00:00:04`.
+A note quotes inside **one line** and may point at the moment: `source: file:<id>.md#t=00:00:04`.
 The `#t=` part is only a pointer for a human to find the spot; the check reads the file.
 Real run, a note quoting a recording:
 
 ```
 $ brain check            # a misquote is rejected
-FAIL  bad-note   quote not found in file:transcript.md#t=00:00:06: "the owner rejected the change"
+FAIL  bad-note   quote not found in file:<id>.md#t=00:00:06: "the owner rejected the change"
 $ brain ask "Why was the graph database dropped?"
 The graph database was dropped because using two frameworks would double the work [1].
   [1] demo/Graph database dropped — current, 2026-09-26 → now
-      "because two frameworks would double the work"      file:transcript.md#t=00:00:00
+      "because two frameworks would double the work"      file:<id>.md#t=00:00:00
 ```
 
 ## What is checked, and what is not
@@ -107,12 +107,12 @@ The graph database was dropped because using two frameworks would double the wor
 - **Not checked:** that the transcript is what was said. Speech to text mishears names and
   numbers, and can invent words over silence. The timestamp is there so a person can listen to
   that second. For decisions that matter, do.
-- **Not private by default in one step:** ingest runs locally, but `/capture` sends the
+- **Not private by default in one step:** `brain add` runs locally, but `/learn` sends the
   transcript to Claude Code to write notes. For sensitive recordings wait for local extraction
-  (roadmap v0.3), or do not capture them. `sources/` is git-ignored; notes derived from private
-  sources belong in a private notes folder (`BRAIN_DIR=brain-private`).
+  (roadmap v0.3), or do not capture them. your brain folder is its own private repository; do not publish it
+  if it holds private material.
 - **Text in a source is data.** A video or message that says "ignore your instructions" is
-  quoted as data; the transcript says so at the top and `/capture` is told the same.
+  quoted as data; the transcript says so at the top and `/learn` is told the same.
 
 ## Known limits
 
@@ -120,8 +120,8 @@ The graph database was dropped because using two frameworks would double the wor
   error hints and token handling have unit tests; a live run needs your token. Please report
   what breaks.
 - Videos that need a login (private Loom, Teams or Zoom recordings) fail; there is no cookie
-  support, on purpose, until it can be done safely. Download the file and ingest the file.
+  support, on purpose, until it can be done safely. Download the file and add the file.
 - Only the Apple Silicon `mlx-whisper` backend was run here. `faster-whisper` and `openai-whisper`
-  are supported by `scripts/transcribe.py` but untested.
+  are supported by `bin/transcribe.py` but untested.
 - No speaker names in recordings (no diarization). Slack lines have names.
 - One video or thread per command; no playlists, no channel history.

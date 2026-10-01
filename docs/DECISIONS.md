@@ -77,3 +77,13 @@ to answer "why did we drop X, and when?" about itself.
 - Date: 2026-10-01 · Status: **current**
 - `Note.loadAll` skips `_draft/`; only `promote` moves notes out, and only after every quote,
   id and supersession link verifies. This makes review-before-promote mechanical.
+
+## D13 — Your brain is its own folder; three verbs
+- Date: 2026-10-01 · Status: **current** · Supersedes: keeping notes inside the tool's repository, and the names capture, ingest, promote and check
+- Evidence: a first-time reader could not tell which folders were the tool and which were their
+  own data, or what each step was for.
+- The tool is installed once. `brain init my-brain` makes a separate folder with `notes/` and
+  `sources/` only; drafts wait in `notes/_draft/`. The steps are add, learn, review, ask. The
+  old command names still work as aliases.
+- Each video, recording or Slack thread becomes one file, `sources/<id>.md`; audio, video and
+  frames are temporary and deleted.

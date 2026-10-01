@@ -3,7 +3,7 @@ id: store-markdown-in-git
 type: decision
 valid_from: 2026-10-01
 status: current
-repo: .
+repo: ../..
 source: file:docs/DECISIONS.md
 quote: Markdown is the source of truth
 ---

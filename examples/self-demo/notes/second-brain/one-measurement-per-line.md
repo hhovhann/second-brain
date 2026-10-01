@@ -3,7 +3,7 @@ id: one-measurement-per-line
 type: decision
 valid_from: 2026-10-01
 status: current
-repo: .
+repo: ../..
 source: file:docs/DECISIONS.md
 quote: Notes are written one measurement per line
 ---

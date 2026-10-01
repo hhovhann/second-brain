@@ -8,8 +8,8 @@ exists? If not, we ship a Claude Code skill and stop. Decided **before** any res
 A real project of the maintainer's, kept private: 36 commits over five months, README, CHANGELOG,
 a long learning path, and reasons that live only in commit bodies. It already contains reversals
 (a framework added and removed; tools removed and reinstated; a graph added and removed) — real
-temporal structure, not planted. Keys: `evals/<project>.yaml`, 13 questions, not published.
-The format is shown in `examples/self-eval.yaml`.
+temporal structure, not planted. Keys: `a questions file`, 13 questions, not published.
+The format is shown in `examples/self-demo/eval.yaml`.
 
 ## Arms
 

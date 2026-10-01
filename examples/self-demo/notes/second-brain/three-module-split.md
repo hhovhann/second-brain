@@ -5,7 +5,7 @@ valid_from: 2026-10-01
 valid_to: 2026-10-01
 status: superseded
 superseded_by: one-gradle-module
-repo: .
+repo: ../..
 source: file:docs/DECISIONS.md
 quote: the `core` / `engine` / `app` split proposed earlier
 ---

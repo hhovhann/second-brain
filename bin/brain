@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Run second-brain from any folder (so Claude Code in another project can call it).
-# Notes and sources are always resolved from this repository's root.
+# Run second-brain from any folder. It works on the brain in your current folder
+# (or $BRAIN_HOME), so cd into your brain first.
 set -euo pipefail
 
 SRC="${BASH_SOURCE[0]}"
@@ -9,23 +9,16 @@ while [ -L "$SRC" ]; do
   SRC="$(readlink "$SRC")"
   [[ "$SRC" != /* ]] && SRC="$DIR/$SRC"
 done
-ROOT="$(cd -P "$(dirname "$SRC")/.." && pwd)"
-BIN="$ROOT/build/install/second-brain/bin/second-brain"
+TOOL="$(cd -P "$(dirname "$SRC")/.." && pwd)"
+BIN="$TOOL/build/install/second-brain/bin/second-brain"
 
 if [ ! -x "$BIN" ]; then
-  echo "second-brain is not built. Run: (cd $ROOT && ./gradlew installDist)" >&2
+  echo "second-brain is not built. Run: (cd $TOOL && ./gradlew installDist)" >&2
   exit 2
 fi
 if [ -z "${JAVA_HOME:-}" ]; then
   for d in "$HOME"/.sdkman/candidates/java/27*; do [ -d "$d" ] && export JAVA_HOME="$d"; done
 fi
 
-# A recording given as a relative path must still be found after we change folder.
-ARGS=()
-for a in "$@"; do
-  if [ "${1:-}" = "ingest" ] && [ "$a" != "ingest" ] && [ -e "$a" ]; then a="$(cd "$(dirname "$a")" && pwd)/$(basename "$a")"; fi
-  ARGS+=("$a")
-done
-
-cd "$ROOT"
-exec "$BIN" ${ARGS[@]+"${ARGS[@]}"}
+export BRAIN_TOOL_DIR="$TOOL"
+exec "$BIN" "$@"

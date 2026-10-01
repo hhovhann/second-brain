@@ -3,7 +3,7 @@ id: benchmark-kill-criterion
 type: decision
 valid_from: 2026-10-01
 status: current
-repo: .
+repo: ../..
 source: file:docs/DECISIONS.md
 quote: states the kill criterion up front, so the result cannot be argued around
 ---

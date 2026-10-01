@@ -3,7 +3,7 @@ id: no-spring-in-v0-1
 type: decision
 valid_from: 2026-10-01
 status: current
-repo: .
+repo: ../..
 source: file:docs/DECISIONS.md
 quote: A local CLI and MCP tool does not need a web framework.
 ---

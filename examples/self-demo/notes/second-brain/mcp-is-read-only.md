@@ -3,7 +3,7 @@ id: mcp-is-read-only
 type: decision
 valid_from: 2026-10-01
 status: current
-repo: .
+repo: ../..
 source: file:docs/DECISIONS.md
 quote: so no tool may take `grants`, and no tool may write.
 ---

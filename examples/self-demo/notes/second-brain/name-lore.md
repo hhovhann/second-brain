@@ -5,7 +5,7 @@ valid_from: 2026-10-01
 valid_to: 2026-10-01
 status: superseded
 superseded_by: name-second-brain
-repo: .
+repo: ../..
 source: file:docs/DECISIONS.md
 quote: `lore` was proposed for brevity and was not self-explanatory.
 ---

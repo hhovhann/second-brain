@@ -5,7 +5,7 @@ valid_from: 2026-10-01
 valid_to: 2026-10-01
 status: superseded
 superseded_by: no-spring-in-v0-1
-repo: .
+repo: ../..
 source: file:docs/DECISIONS.md
 quote: Supersedes: "Spring Boot + LangChain4j" (same day, earlier)
 ---

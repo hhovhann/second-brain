@@ -1,7 +1,7 @@
-# Gold questions about second-brain itself, answered from examples/brain.
+# Gold questions about second-brain itself, answered from the notes next to this file.
 # Format: id, kind (current | why | reversal | decline), ask, expect (phrases a right answer
 # contains), forbid (phrases it must not assert). Run:
-#   BRAIN_DIR=examples/brain build/install/second-brain/bin/second-brain eval examples/self-eval.yaml second-brain
+#   brain eval eval.yaml second-brain
 questions:
   - id: S1
     kind: current

@@ -5,7 +5,7 @@ valid_from: 2026-10-01
 valid_to: 2026-10-01
 status: superseded
 superseded_by: store-markdown-in-git
-repo: .
+repo: ../..
 source: file:docs/DECISIONS.md
 quote: Supersedes: Neo4j + Postgres + Redis (an earlier prototype)
 ---
