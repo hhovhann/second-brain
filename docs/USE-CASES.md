@@ -15,14 +15,18 @@ carry a quote a program has verified, then answers from the notes only.
 | Any text or Markdown file | **Yes** | The file is the source; quotes are checked against it. |
 | A meeting transcript saved as text (`.txt`, `.vtt`) | **Yes** | Same as any text file. Keep the file in a folder the note's `repo:` points to. |
 | A chat copied or exported to a text file | **Yes** | Paste it into a file first. |
-| A Slack **link** | **No** | A link cannot be read without access. Export or paste the thread into a file. A live connector does not exist. |
-| A **video URL** (YouTube, Loom, Teams recording) | **No** | Nothing downloads or transcribes video. Transcribe it yourself, save the text, and it becomes a text file source. A built-in transcription step is planned for v0.3. |
-| A **screen recording** | **No** | Only what is *said* could ever become text, and only after transcription. What is *shown* on screen is not read. |
+| A Slack **message link** | **Yes, with your token** | `brain ingest <link>` reads the thread through Slack's API (needs `SLACK_TOKEN`; tested against a mock server, not yet a live workspace). |
+| A **video URL** (YouTube and other `yt-dlp` sites) | **Yes** | `brain ingest <url>` downloads the audio and transcribes it locally. Login-gated videos fail; download the file and ingest that. |
+| A **screen recording** or audio/video file | **Yes** | `brain ingest file.mov --screen` gives what was said and the text visible on screen, with timestamps. It reads text only, not charts or UI. |
+| An **old video or audio file** you already have | **Yes** | Same as a new recording: `brain ingest old-demo.mp4`. |
+| Notes a team already shares (Markdown in Git) | **Yes** | Share the notes repository; any existing Markdown is also a valid source for `/capture`. |
+| PDF, Word, Google Docs, images and screenshots, web pages, email, Confluence, Jira | **No** | Not built. Convert to text first and it works as a text file. On the [roadmap](ROADMAP.md). |
 | Code diffs | **Partly** | The commit *message* is checked, the diff is not. |
 
-So: the tool does **not** yet do "chat, video link, screen recording" by itself. It does the
-second half of that pipeline (turn text into verified, askable notes). The first half
-(get text out of links and recordings) is on the [roadmap](ROADMAP.md).
+So: yes, the tool now does chat links, video links and screen recordings, in the sense that
+each becomes a timestamped transcript from which verified notes are made. The limits that
+matter are in [INGEST.md](INGEST.md): transcription can mishear, Slack is untested live, and
+`/capture` sends the transcript to Claude Code to write the notes.
 
 ## Examples of use
 
@@ -42,7 +46,7 @@ including facts that are no longer true.
 `brain ask --as-of 2026-09-20 "Which frameworks did it use?"` answers as of that date.
 
 **5. Meeting decisions and commitments.**
-Save the transcript as text, `/capture` it, review, promote. Later: "what did we commit to?"
+`brain ingest recording.mov`, then `/capture` it, review, promote. Later: "what did we commit to?"
 Notes can carry `commitment` and `open_question` types.
 
 **6. Telling you what is not known.**

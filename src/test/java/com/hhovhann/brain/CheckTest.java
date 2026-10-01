@@ -63,6 +63,21 @@ class CheckTest {
     }
 
     @Test
+    void aTimestampFragmentPointsAtAMomentButOnlyThePathIsRead() throws IOException {
+        source("transcript.md", "[00:12:03] We dropped the graph database because it was unused.");
+        Note n = note("a", "file:transcript.md#t=00:12:03", "dropped the graph database because it was unused", "");
+        assertThat(Check.run(List.of(n), root)).isEmpty();
+    }
+
+    @Test
+    void aFragmentCannotSmuggleInAPathThatEscapes() throws IOException {
+        Files.writeString(root.resolve("secret.txt"), "top secret value here");
+        Note n = note("a", "file:../secret.txt#t=1", "top secret value here", "");
+        assertThat(Check.run(List.of(n), root)).singleElement()
+                .satisfies(p -> assertThat(p.message()).contains("escapes the repository"));
+    }
+
+    @Test
     void aPathThatEscapesTheRepositoryIsRejected() throws IOException {
         Files.writeString(root.resolve("secret.txt"), "top secret value here");
         Note n = note("a", "file:../secret.txt", "top secret value here", "");

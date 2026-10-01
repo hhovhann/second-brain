@@ -11,6 +11,12 @@ in Claude Code, which takes the top open item, writes a failing test first, and 
 - Claude Code commands: `/capture`, `/ask`, `/improve`
 - A self-demo: the project's own decision log as a brain (`examples/brain`)
 
+## v0.1.1 — non-text inputs (done)
+
+- `brain ingest` for video URLs, recordings (speech, and on-screen text with `--screen`) and Slack
+  thread links, producing timestamped transcripts that the existing quote check verifies
+- Live Slack run still to be confirmed with a real workspace
+
 ## v0.2 — prove it is worth using
 
 The benchmark in [BENCHMARK.md](BENCHMARK.md) has a fixed rule: if Claude Code alone is within
@@ -26,9 +32,13 @@ a program. So this comes first.
 ## v0.3 — more kinds of input
 
 - [ ] `brain add <file>`: extraction with a local model, for private or bulk material
-- [ ] **Speech-to-text step** so recordings can become sources: a local transcriber produces a
-      timestamped transcript, notes quote the transcript, and `check` verifies against it
-- [ ] Saved Slack export reader (a Slack *link* alone cannot be read without access)
+- [ ] Speaker names in recordings (diarization), and login-gated videos via a safe cookie path
+- [ ] Slack channel history and file attachments, not only one thread
+- [ ] More source types, all turned into the same timestamped or paged text file:
+      PDF and Word documents, images and screenshots (OCR, the engine already exists),
+      web pages, Google Docs and Drive, email, Confluence and Jira, Teams and Zoom recordings
+      (these need login, so each needs a safe credential path)
+- [ ] Verify a quote against the **audio**, not only the transcript (second transcription pass)
 - [ ] Incremental ingest: hash sources, process only what changed
 - [ ] Source type `diff:` so a quote can be checked against code changes, not only commit messages
 
@@ -60,7 +70,8 @@ a program. So this comes first.
 | Not benchmarked against Claude Code alone | We do not yet know it is better | v0.2 |
 | Only the 6 nearest notes reach the model | A relevant note can be missed | v0.2 |
 | A 14B local model garbles ambiguous numbers | Check the quotes beside the answer | v0.4 |
-| Capture uses Claude Code and your quota | No private or bulk capture yet | v0.3 |
+| Capture uses Claude Code and your quota | Transcripts of private recordings are sent to it; no local capture yet | v0.3 |
+| Speech-to-text can mishear; Slack not tested on a live workspace | Listen at the timestamp for what matters | v0.2 |
 | `git:` quotes check the commit message only | Code changes are invisible | v0.3 |
 | Needs JDK 27 (preview features) and LM Studio | Heavier setup than a script | open |
 | Terminal only | Not for non-developers | v0.5 |

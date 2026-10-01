@@ -76,7 +76,10 @@ final class Check {
             return output;
         }
         if (source.startsWith("file:")) {
-            Path file = repo.resolve(source.substring(5)).normalize();
+            // "file:transcript.md#t=00:12:03" points at a moment; only the path is read.
+            String relative = source.substring(5);
+            int fragment = relative.indexOf('#');
+            Path file = repo.resolve(fragment < 0 ? relative : relative.substring(0, fragment)).normalize();
             // A path written by a model or a corpus must never leave the repository.
             if (!file.startsWith(repo)) {
                 throw new IllegalArgumentException("path escapes the repository: " + source);

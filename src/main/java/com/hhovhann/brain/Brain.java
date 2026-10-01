@@ -20,6 +20,7 @@ public final class Brain {
         }
         switch (command) {
             case "doctor" -> System.exit(Doctor.run(System.out));
+            case "ingest" -> System.exit(Ingest.run(root, List.of(args).subList(1, args.length)));
             case "check" -> System.exit(check(dir, root, List.of(args).contains("--drafts")));
             case "promote" -> System.exit(args.length < 2 ? 2 : Promote.run(dir, root, args[1]));
             case "eval" -> System.exit(args.length < 2 ? 2 : EvalRun.run(dir, root, Path.of(args[1]), args.length > 2 ? args[2] : null));
@@ -28,6 +29,8 @@ public final class Brain {
                 System.out.println("""
                         second-brain
 
+                          ingest <slack-link|video-url|file> [--name id] [--screen]
+                                         turn a Slack thread, video or recording into a transcript in sources/
                           check [--drafts]  verify every note's quote really occurs in its source
                           promote <project> move reviewed drafts into brain/ (refuses if any quote fails)
                           eval <file> [project]  run the gold questions and write a report
